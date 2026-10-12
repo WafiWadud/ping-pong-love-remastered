@@ -24,18 +24,19 @@ NET_COUNT        = 51
 NET_GIRTH        = 3
 DIGIT_SIZE       = BALL_SIZE
 
-ball_x         = 0
-ball_y         = 0
-ball_dx        = -1
-ball_dy        = 1
-paddle_left_y  = 0
-paddle_right_y = 0
-score_left     = 0
-score_right    = 0
-joystick_left  = nil
-joystick_right = nil
-hit = nil
-score = nil
+ball_x            = 0
+ball_y            = 0
+ball_dx           = -1
+ball_dy           = 1
+paddle_left_y     = 0
+paddle_right_y    = 0
+score_left        = 0
+score_right       = 0
+joystick_left     = nil
+joystick_right    = nil
+sound_hit         = nil
+sound_score_left  = nil
+sound_score_right = nil
 
 digits = {
    [0] = {{1,1,1}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,1}},
@@ -113,7 +114,8 @@ end
 
 function love.load()
    local factor = 80
-   love.window.setMode(16*factor, 9*factor);
+   love.window.setMode(16*factor, 9*factor)
+   love.window.setTitle("Ping Pong")
 
    for i,joystick in ipairs(love.joystick.getJoysticks()) do
       if joystick:isGamepad() then
@@ -136,15 +138,17 @@ function love.load()
    ball_x         = w/2 - BALL_SIZE/2
    ball_y         = h/2 - BALL_SIZE/2
 
-   hit = love.audio.newSource("popup-show.wav", "static") -- https://opengameart.org/content/ui-soundpack-by-m1chiboi-bleeps-and-clicks
-   score = love.audio.newSource("blast.ogg", "static") -- https://opengameart.org/content/magic-sfx-sample
+   love.audio.setVolume(0.5)
+   sound_hit         = love.audio.newSource("sounds_ping_pong_8bit/ping_pong_8bit_plop.ogg", "static")
+   sound_score_left  = love.audio.newSource("sounds_ping_pong_8bit/ping_pong_8bit_beeep.ogg", "static")
+   sound_score_right = love.audio.newSource("sounds_ping_pong_8bit/ping_pong_8bit_peeeeeep.ogg", "static")
 end
 
 function love.draw()
    local w = love.graphics.getWidth()
    local h = love.graphics.getHeight()
 
-   love.graphics.clear(0x20/255, 0x1e/255, 0x18/255, 1);
+   love.graphics.clear(0x20/255, 0x1e/255, 0x18/255, 1)
 
    local segment_length = h/NET_COUNT
    for i=0,NET_COUNT-1 do
@@ -163,8 +167,8 @@ function love.draw()
    love.graphics.rectangle("fill", paddle_right_x, paddle_right_y, PADDLE_THICCNESS, PADDLE_LENGTH)
 
    local score_left_width = number_width(score_left)
-   render_number(score_left,  w/2 - score_left_width - 2*DIGIT_SIZE, 2*DIGIT_SIZE);
-   render_number(score_right, w/2 + 2*DIGIT_SIZE, 2*DIGIT_SIZE);
+   render_number(score_left,  w/2 - score_left_width - 2*DIGIT_SIZE, 2*DIGIT_SIZE)
+   render_number(score_right, w/2 + 2*DIGIT_SIZE, 2*DIGIT_SIZE)
 end
 
 function love.update(dt)
@@ -182,21 +186,21 @@ function love.update(dt)
                             paddle_right_x,  paddle_right_y, PADDLE_THICCNESS, PADDLE_LENGTH)
    then
       ball_dx = -ball_dx
-      love.audio.play(hit)
+      love.audio.play(sound_hit)
    elseif (ball_nx < 0) then
       score_right = score_right + 1
       ball_x      = w/2 - BALL_SIZE/2
       ball_y      = h/2 - BALL_SIZE/2
       ball_dx     = 1
       ball_dy     = 1
-      love.audio.play(score)
+      love.audio.play(sound_score_right)
    elseif (ball_nx + BALL_SIZE >= w) then
       score_left = score_left + 1
       ball_x     = w/2 - BALL_SIZE/2
       ball_y     = h/2 - BALL_SIZE/2
       ball_dx    = -1
       ball_dy    = 1
-      love.audio.play(score)
+      love.audio.play(sound_score_left)
    else
       ball_x = ball_nx
    end
@@ -211,7 +215,7 @@ function love.update(dt)
                                paddle_right_x, paddle_right_y, PADDLE_THICCNESS, PADDLE_LENGTH)
    then
       ball_dy = -ball_dy
-      love.audio.play(hit)
+      love.audio.play(sound_hit)
    else
       ball_y = ball_ny
    end
@@ -260,4 +264,6 @@ function love.update(dt)
       end
    end
 end
--- TODO: sounds
+
+-- TODO: pause
+-- TODO: restart
