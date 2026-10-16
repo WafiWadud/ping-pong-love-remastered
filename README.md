@@ -6,8 +6,9 @@ Basically like [ping-pong-love](https://github.com/tsoding/ping-pong-love) but f
 
 ## Quick Start
 
-Install [LÖVE](https://love2d.org/)
+Install [LÖVE](https://love2d.org/) and [Teal](https://teal-language.org/)
 
 ```console
+$ tl gen main.tl
 $ love .
 ```

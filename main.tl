@@ -14,31 +14,33 @@
 -- You should have received a copy of the GNU General Public License along
 -- with this program; if not, see <https://www.gnu.org/licenses/>.
 
-BALL_SIZE        = 20
-BALL_SPEED       = 1000*0.4
-PADDLE_PADING    = 4*BALL_SIZE
-PADDLE_LENGTH    = BALL_SIZE*6
-PADDLE_THICCNESS = BALL_SIZE
-PADDLE_SPEED     = BALL_SPEED*1.2
-NET_COUNT        = 51
-NET_GIRTH        = 3
-DIGIT_SIZE       = BALL_SIZE
+require("love")
 
-ball_x            = 0
-ball_y            = 0
-ball_dx           = -1
-ball_dy           = 1
-paddle_left_y     = 0
-paddle_right_y    = 0
-score_left        = 0
-score_right       = 0
-joystick_left     = nil
-joystick_right    = nil
-sound_hit         = nil
-sound_score_left  = nil
-sound_score_right = nil
+local BALL_SIZE        = 20
+local BALL_SPEED       = 1000*0.4
+local PADDLE_PADING    = 4*BALL_SIZE
+local PADDLE_LENGTH    = BALL_SIZE*6
+local PADDLE_THICCNESS = BALL_SIZE
+local PADDLE_SPEED     = BALL_SPEED*1.2
+local NET_COUNT        = 51
+local NET_GIRTH        = 3
+local DIGIT_SIZE       = BALL_SIZE
 
-digits = {
+local ball_x                      =  0.0
+local ball_y                      =  0.0
+local ball_dx                     = -1.0
+local ball_dy                     =  1.0
+local paddle_left_y               =  0.0
+local paddle_right_y              =  0.0
+local score_left                  =  0
+local score_right                 =  0
+local joystick_left:     Joystick =  nil
+local joystick_right:    Joystick =  nil
+local sound_hit:         Source   =  nil
+local sound_score_left:  Source   =  nil
+local sound_score_right: Source   =  nil
+
+local digits = {
    [0] = {{1,1,1}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,1}},
    [1] = {{0,1,0}, {0,1,0}, {0,1,0}, {0,1,0}, {0,1,0}},
    [2] = {{1,1,1}, {0,0,1}, {1,1,1}, {1,0,0}, {1,1,1}},
@@ -51,7 +53,7 @@ digits = {
    [9] = {{1,1,1}, {1,0,1}, {1,1,1}, {0,0,1}, {1,1,1}},
 }
 
-function render_digit(digit, x, y)
+local function render_digit(digit: {{integer}}, x: number, y: number)
    for cell_y,row in ipairs(digit) do
       for cell_x,cell in ipairs(row) do
          if cell ~= 0 then
@@ -61,7 +63,7 @@ function render_digit(digit, x, y)
    end
 end
 
-function count_digits(n)
+local function count_digits(n: integer): integer
    assert(n >= 0)
    if n == 0 then
       return 1
@@ -74,12 +76,12 @@ function count_digits(n)
    return count
 end
 
-function number_width(n)
+local function number_width(n: integer): integer
    local count = count_digits(n)
    return count*3*DIGIT_SIZE + (count - 1)*DIGIT_SIZE
 end
 
-function render_number(n, x, y)
+local function render_number(n: integer, x: number, y: number)
    assert(n >= 0)
    if n == 0 then
       render_digit(digits[0], x, y)
@@ -93,7 +95,7 @@ function render_number(n, x, y)
    end
 end
 
-function check_rects_collision(x1, y1, w1, h1, x2, y2, w2, h2)
+local function check_rects_collision(x1: number, y1: number, w1: number, h1: number, x2: number, y2: number, w2: number, h2: number): boolean
    local l1 = x1
    local r1 = x1 + w1
    local t1 = y1
@@ -117,7 +119,7 @@ function love.load()
    love.window.setMode(16*factor, 9*factor)
    love.window.setTitle("Ping Pong")
 
-   for i,joystick in ipairs(love.joystick.getJoysticks()) do
+   for _,joystick in ipairs(love.joystick.getJoysticks()) do
       if joystick:isGamepad() then
          if not joystick_left then
             joystick_left = joystick
@@ -171,7 +173,7 @@ function love.draw()
    render_number(score_right, w/2 + 2*DIGIT_SIZE, 2*DIGIT_SIZE)
 end
 
-function love.update(dt)
+function love.update(dt: number)
    local w = love.graphics.getWidth()
    local h = love.graphics.getHeight()
 
