@@ -24,7 +24,7 @@ local PADDLE_THICCNESS = BALL_SIZE
 local PADDLE_SPEED     = BALL_SPEED*1.2
 local NET_COUNT        = 51
 local NET_GIRTH        = 3
-local DIGIT_SIZE       = BALL_SIZE
+local GLYPH_SIZE       = BALL_SIZE
 
 local ball_x                      =  0.0
 local ball_y                      =  0.0
@@ -39,6 +39,7 @@ local joystick_right:    Joystick =  nil
 local sound_hit:         Source   =  nil
 local sound_score_left:  Source   =  nil
 local sound_score_right: Source   =  nil
+local paused = false
 
 local digits = {
    [0] = {{1,1,1}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,1}},
@@ -53,11 +54,59 @@ local digits = {
    [9] = {{1,1,1}, {1,0,1}, {1,1,1}, {0,0,1}, {1,1,1}},
 }
 
-local function render_digit(digit: {{integer}}, x: number, y: number)
-   for cell_y,row in ipairs(digit) do
+local enum FontGlyphs
+   "p"
+   "a"
+   "u"
+   "s"
+   "e"
+   "d"
+end
+
+local font: {FontGlyphs:{{integer}}} = {
+   ["p"] = {
+      {1,1,1},
+      {1,0,1},
+      {1,1,1},
+      {1,0,0},
+      {1,0,0},
+   },
+   ["a"] = {
+      {1,1,1},
+      {1,0,1},
+      {1,1,1},
+      {1,0,1},
+      {1,0,1},
+   },
+   ["u"] = {
+      {1,0,1},
+      {1,0,1},
+      {1,0,1},
+      {1,0,1},
+      {1,1,1},
+   },
+   ["s"] = digits[5],
+   ["e"] = {
+      {1,1,1},
+      {1,0,0},
+      {1,1,1},
+      {1,0,0},
+      {1,1,1},
+   },
+   ["d"] = {
+      {1,1,0},
+      {1,0,1},
+      {1,0,1},
+      {1,0,1},
+      {1,1,0},
+   },
+}
+
+local function render_glyph(glyph: {{integer}}, x: number, y: number)
+   for cell_y,row in ipairs(glyph) do
       for cell_x,cell in ipairs(row) do
          if cell ~= 0 then
-            love.graphics.rectangle("fill", x + (cell_x-1)*DIGIT_SIZE, y + (cell_y-1)*DIGIT_SIZE, DIGIT_SIZE, DIGIT_SIZE)
+            love.graphics.rectangle("fill", x + (cell_x-1)*GLYPH_SIZE, y + (cell_y-1)*GLYPH_SIZE, GLYPH_SIZE, GLYPH_SIZE)
          end
       end
    end
@@ -78,20 +127,32 @@ end
 
 local function number_width(n: integer): integer
    local count = count_digits(n)
-   return count*3*DIGIT_SIZE + (count - 1)*DIGIT_SIZE
+   return count*3*GLYPH_SIZE + (count - 1)*GLYPH_SIZE
+end
+
+local function text_width(text: {FontGlyphs}): integer
+   local count = #text
+   return count*3*GLYPH_SIZE + (count - 1)*GLYPH_SIZE
+end
+
+local function render_text(text: {FontGlyphs}, x: number, y: number)
+   for _,glyph in ipairs(text) do
+      render_glyph(font[glyph], x, y)
+      x = x + 4*GLYPH_SIZE
+   end
 end
 
 local function render_number(n: integer, x: number, y: number)
    assert(n >= 0)
    if n == 0 then
-      render_digit(digits[0], x, y)
+      render_glyph(digits[0], x, y)
       return
    end
-   x = x + (count_digits(n)-1)*4*DIGIT_SIZE
+   x = x + (count_digits(n)-1)*4*GLYPH_SIZE
    while n > 0 do
-      render_digit(digits[n%10], x, y)
+      render_glyph(digits[n%10], x, y)
       n = math.floor(n/10)
-      x = x - 4*DIGIT_SIZE
+      x = x - 4*GLYPH_SIZE
    end
 end
 
@@ -169,11 +230,28 @@ function love.draw()
    love.graphics.rectangle("fill", paddle_right_x, paddle_right_y, PADDLE_THICCNESS, PADDLE_LENGTH)
 
    local score_left_width = number_width(score_left)
-   render_number(score_left,  w/2 - score_left_width - 2*DIGIT_SIZE, 2*DIGIT_SIZE)
-   render_number(score_right, w/2 + 2*DIGIT_SIZE, 2*DIGIT_SIZE)
+   render_number(score_left,  w/2 - score_left_width - 2*GLYPH_SIZE, 2*GLYPH_SIZE)
+   render_number(score_right, w/2 + 2*GLYPH_SIZE, 2*GLYPH_SIZE)
+
+   if paused then
+      local paused_text = {"p", "a", "u", "s", "e", "d"}
+      local paused_text_width  = text_width(paused_text)
+      local paused_text_height = 5*GLYPH_SIZE
+      render_text(paused_text, w/2 - paused_text_width/2, h/2 - paused_text_height/2)
+   end
+end
+
+function love.keypressed(key: KeyConstant, _scancode: Scancode, _isrepeat: boolean)
+   if key == "space" then
+      paused = not paused
+   end
 end
 
 function love.update(dt: number)
+   if paused then
+      return
+   end
+
    local w = love.graphics.getWidth()
    local h = love.graphics.getHeight()
 
@@ -267,5 +345,4 @@ function love.update(dt: number)
    end
 end
 
--- TODO: pause
 -- TODO: restart

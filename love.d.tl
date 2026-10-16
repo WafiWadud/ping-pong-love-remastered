@@ -8,11 +8,15 @@ local enum SourceType
    "static"
 end
 
-local enum KeyConstant
+global enum KeyConstant
    "s"
    "w"
    "down"
    "up"
+   "space"
+end
+
+global enum Scancode
 end
 
 local enum GamepadButton
@@ -32,6 +36,7 @@ global record love
    load: function()
    draw: function()
    update: function(dt: number)
+   keypressed: function(key: KeyConstant, scancode: Scancode, isrepeat: boolean)
 
    record graphics
       rectangle: function(mode: DrawMode, x: number, y: number, width: number, height: number)
