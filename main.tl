@@ -248,6 +248,12 @@ function love.keypressed(key: KeyConstant, _scancode: Scancode, _isrepeat: boole
    end
 end
 
+function love.gamepadpressed(joystick: Joystick, button: GamepadButton)
+   if button == "start" and (joystick == joystick_left or joystick == joystick_right) then
+      paused = not paused
+   end
+end
+
 function love.update(dt: number)
    if paused then
       return

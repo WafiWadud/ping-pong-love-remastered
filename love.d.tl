@@ -19,9 +19,10 @@ end
 global enum Scancode
 end
 
-local enum GamepadButton
+global enum GamepadButton
    "dpdown"
    "dpup"
+   "start"
 end
 
 global record Joystick
@@ -37,6 +38,7 @@ global record love
    draw: function()
    update: function(dt: number)
    keypressed: function(key: KeyConstant, scancode: Scancode, isrepeat: boolean)
+   gamepadpressed: function(joystick: Joystick, button: GamepadButton)
 
    record graphics
       rectangle: function(mode: DrawMode, x: number, y: number, width: number, height: number)
