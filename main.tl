@@ -1,31 +1,37 @@
--- Ping pong game in Love2D
--- Copyright (C) 2026  Alexey Kutepov <reximkut@gmail.com>
---
--- This program is free software; you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation; either version 2 of the License, or
--- (at your option) any later version.
---
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU General Public License for more details.
---
--- You should have received a copy of the GNU General Public License along
--- with this program; if not, see <https://www.gnu.org/licenses/>.
+--[[
+  Ping pong game in Love2D
+  Copyright (C) 2026  Alexey Kutepov <reximkut@gmail.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along
+  with this program; if not, see <https://www.gnu.org/licenses/>.
+
+  Changes Made by Escapism/Wafi:
+  - Made the consts actually const
+  - Made the binary tables into boolean tables (it looks horrible)
+]]
 
 require("love")
 
-local BALL_SIZE         = 20
-local BALL_SPEED        = 1000*0.4
-local PADDLE_PADING     = 4*BALL_SIZE
-local PADDLE_LENGTH     = BALL_SIZE*6
-local PADDLE_THICCNESS  = BALL_SIZE
-local PADDLE_SPEED      = BALL_SPEED*1.2
-local NET_COUNT         = 51
-local NET_GIRTH         = 3
-local SCORE_GLYPH_SIZE  = BALL_SIZE
-local PAUSED_GLYPH_SIZE = SCORE_GLYPH_SIZE*0.6
+local BALL_SIZE <const>         = 20
+local BALL_SPEED <const>        = 1000*0.4
+local PADDLE_PADING <const>     = 4*BALL_SIZE
+local PADDLE_LENGTH <const>     = BALL_SIZE*6
+local PADDLE_THICCNESS <const>  = BALL_SIZE
+local PADDLE_SPEED <const>      = BALL_SPEED*1.2
+local NET_COUNT <const>         = 51
+local NET_GIRTH <const>         = 3
+local SCORE_GLYPH_SIZE <const>  = BALL_SIZE
+local PAUSED_GLYPH_SIZE <const> = SCORE_GLYPH_SIZE*0.6
 
 local ball_x                      =  0.0
 local ball_y                      =  0.0
@@ -42,17 +48,17 @@ local sound_score_left:  Source   =  nil
 local sound_score_right: Source   =  nil
 local paused = false
 
-local digits = {
-   [0] = {{1,1,1}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,1}},
-   [1] = {{0,1,0}, {0,1,0}, {0,1,0}, {0,1,0}, {0,1,0}},
-   [2] = {{1,1,1}, {0,0,1}, {1,1,1}, {1,0,0}, {1,1,1}},
-   [3] = {{1,1,1}, {0,0,1}, {1,1,1}, {0,0,1}, {1,1,1}},
-   [4] = {{1,0,1}, {1,0,1}, {1,1,1}, {0,0,1}, {0,0,1}},
-   [5] = {{1,1,1}, {1,0,0}, {1,1,1}, {0,0,1}, {1,1,1}},
-   [6] = {{1,1,1}, {1,0,0}, {1,1,1}, {1,0,1}, {1,1,1}},
-   [7] = {{1,1,1}, {0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}},
-   [8] = {{1,1,1}, {1,0,1}, {1,1,1}, {1,0,1}, {1,1,1}},
-   [9] = {{1,1,1}, {1,0,1}, {1,1,1}, {0,0,1}, {1,1,1}},
+local digits: {{{boolean}}} = {
+   [0] = {{true ,true ,true }, {true ,false,true }, {true ,false,true }, {true ,false,true }, {true ,true ,true }},
+   [1] = {{false,true ,false}, {false,true ,false}, {false,true ,false}, {false,true ,false}, {false,true ,false}},
+   [2] = {{true ,true ,true }, {false,false,true }, {true ,true ,true }, {true ,false,false}, {true ,true ,true }},
+   [3] = {{true ,true ,true }, {false,false,true }, {true ,true ,true }, {false,false,true }, {true ,true ,true }},
+   [4] = {{true ,false,true }, {true ,false,true }, {true ,true ,true }, {false,false,true }, {false,false,true }},
+   [5] = {{true ,true ,true }, {true ,false,false}, {true ,true ,true }, {false,false,true }, {true ,true ,true }},
+   [6] = {{true ,true ,true }, {true ,false,false}, {true ,true ,true }, {true ,false,true }, {true ,true ,true }},
+   [7] = {{true ,true ,true }, {false,false,true }, {false,false,true }, {false,false,true }, {false,false,true }},
+   [8] = {{true ,true ,true }, {true ,false,true }, {true ,true ,true }, {true ,false,true }, {true ,true ,true }},
+   [9] = {{true ,true ,true }, {true ,false,true }, {true ,true ,true }, {false,false,true }, {true ,true ,true }},
 }
 
 local enum FontGlyphs
@@ -64,19 +70,19 @@ local enum FontGlyphs
    "d"
 end
 
-local font: {FontGlyphs:{{integer}}} = {
-   ["p"] = {{1,1,1}, {1,0,1}, {1,1,1}, {1,0,0}, {1,0,0}},
-   ["a"] = {{1,1,1}, {1,0,1}, {1,1,1}, {1,0,1}, {1,0,1}},
-   ["u"] = {{1,0,1}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,1}},
-   ["s"] = digits[5],
-   ["e"] = {{1,1,1}, {1,0,0}, {1,1,1}, {1,0,0}, {1,1,1}},
-   ["d"] = {{1,1,0}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,0}},
+local font: {FontGlyphs:{{boolean}}} = {
+   ["p"] = {{true,true ,true }, {true,false,true }, {true,true ,true}, {true,false,false}, {true,false,false}},
+   ["a"] = {{true,true ,true }, {true,false,true }, {true,true ,true}, {true,false,true }, {true,false,true }},
+   ["u"] = {{true,false,true }, {true,false,true }, {true,false,true}, {true,false,true }, {true,true ,true }},
+   ["s"] =                                                                                           digits[5],
+   ["e"] = {{true,true ,true }, {true,false,false}, {true,true ,true}, {true,false,false}, {true,true ,true }},
+   ["d"] = {{true,true ,false}, {true,false,true }, {true,false,true}, {true,false,true }, {true,true ,false}},
 }
 
-local function render_glyph(glyph: {{integer}}, x: number, y: number, glyph_size: number)
+local function render_glyph(glyph: {{boolean}}, x: number, y: number, glyph_size: number)
    for cell_y,row in ipairs(glyph) do
       for cell_x,cell in ipairs(row) do
-         if cell ~= 0 then
+         if cell ~= false then
             love.graphics.rectangle("fill", x + (cell_x-1)*glyph_size, y + (cell_y-1)*glyph_size, glyph_size, glyph_size)
          end
       end
@@ -147,7 +153,7 @@ local function check_rects_collision(x1: number, y1: number, w1: number, h1: num
 end
 
 function love.load()
-   local factor = 80
+   local factor <const> = 80
    love.window.setMode(16*factor, 9*factor)
    love.window.setTitle("Ping Pong")
 
@@ -165,8 +171,8 @@ function love.load()
    print("joystick_left  = ", joystick_left)
    print("joystick_right = ", joystick_right)
 
-   local w = love.graphics.getWidth()
-   local h = love.graphics.getHeight()
+   local w <const> = love.graphics.getWidth()
+   local h <const> = love.graphics.getHeight()
    paddle_left_y  = h/2 - PADDLE_LENGTH*0.5
    paddle_right_y = h/2 - PADDLE_LENGTH*0.5
    ball_x         = w/2 - BALL_SIZE/2
