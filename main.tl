@@ -16,15 +16,16 @@
 
 require("love")
 
-local BALL_SIZE        = 20
-local BALL_SPEED       = 1000*0.4
-local PADDLE_PADING    = 4*BALL_SIZE
-local PADDLE_LENGTH    = BALL_SIZE*6
-local PADDLE_THICCNESS = BALL_SIZE
-local PADDLE_SPEED     = BALL_SPEED*1.2
-local NET_COUNT        = 51
-local NET_GIRTH        = 3
-local GLYPH_SIZE       = BALL_SIZE
+local BALL_SIZE         = 20
+local BALL_SPEED        = 1000*0.4
+local PADDLE_PADING     = 4*BALL_SIZE
+local PADDLE_LENGTH     = BALL_SIZE*6
+local PADDLE_THICCNESS  = BALL_SIZE
+local PADDLE_SPEED      = BALL_SPEED*1.2
+local NET_COUNT         = 51
+local NET_GIRTH         = 3
+local SCORE_GLYPH_SIZE  = BALL_SIZE
+local PAUSED_GLYPH_SIZE = SCORE_GLYPH_SIZE*0.6
 
 local ball_x                      =  0.0
 local ball_y                      =  0.0
@@ -102,11 +103,11 @@ local font: {FontGlyphs:{{integer}}} = {
    },
 }
 
-local function render_glyph(glyph: {{integer}}, x: number, y: number)
+local function render_glyph(glyph: {{integer}}, x: number, y: number, glyph_size: number)
    for cell_y,row in ipairs(glyph) do
       for cell_x,cell in ipairs(row) do
          if cell ~= 0 then
-            love.graphics.rectangle("fill", x + (cell_x-1)*GLYPH_SIZE, y + (cell_y-1)*GLYPH_SIZE, GLYPH_SIZE, GLYPH_SIZE)
+            love.graphics.rectangle("fill", x + (cell_x-1)*glyph_size, y + (cell_y-1)*glyph_size, glyph_size, glyph_size)
          end
       end
    end
@@ -125,34 +126,34 @@ local function count_digits(n: integer): integer
    return count
 end
 
-local function number_width(n: integer): integer
+local function number_width(n: integer, glyph_size: number): number
    local count = count_digits(n)
-   return count*3*GLYPH_SIZE + (count - 1)*GLYPH_SIZE
+   return count*3*glyph_size + (count - 1)*glyph_size
 end
 
-local function text_width(text: {FontGlyphs}): integer
+local function text_width(text: {FontGlyphs}, glyph_size: number): number
    local count = #text
-   return count*3*GLYPH_SIZE + (count - 1)*GLYPH_SIZE
+   return count*3*glyph_size + (count - 1)*glyph_size
 end
 
-local function render_text(text: {FontGlyphs}, x: number, y: number)
+local function render_text(text: {FontGlyphs}, x: number, y: number, glyph_size: number)
    for _,glyph in ipairs(text) do
-      render_glyph(font[glyph], x, y)
-      x = x + 4*GLYPH_SIZE
+      render_glyph(font[glyph], x, y, glyph_size)
+      x = x + 4*glyph_size
    end
 end
 
-local function render_number(n: integer, x: number, y: number)
+local function render_number(n: integer, x: number, y: number, glyph_size: number)
    assert(n >= 0)
    if n == 0 then
-      render_glyph(digits[0], x, y)
+      render_glyph(digits[0], x, y, glyph_size)
       return
    end
-   x = x + (count_digits(n)-1)*4*GLYPH_SIZE
+   x = x + (count_digits(n)-1)*4*glyph_size
    while n > 0 do
-      render_glyph(digits[n%10], x, y)
+      render_glyph(digits[n%10], x, y, glyph_size)
       n = math.floor(n/10)
-      x = x - 4*GLYPH_SIZE
+      x = x - 4*glyph_size
    end
 end
 
@@ -229,15 +230,15 @@ function love.draw()
    love.graphics.rectangle("fill", paddle_left_x,  paddle_left_y, PADDLE_THICCNESS, PADDLE_LENGTH)
    love.graphics.rectangle("fill", paddle_right_x, paddle_right_y, PADDLE_THICCNESS, PADDLE_LENGTH)
 
-   local score_left_width = number_width(score_left)
-   render_number(score_left,  w/2 - score_left_width - 2*GLYPH_SIZE, 2*GLYPH_SIZE)
-   render_number(score_right, w/2 + 2*GLYPH_SIZE, 2*GLYPH_SIZE)
+   local score_left_width = number_width(score_left, SCORE_GLYPH_SIZE)
+   render_number(score_left,  w/2 - score_left_width - 2*SCORE_GLYPH_SIZE, 2*SCORE_GLYPH_SIZE, SCORE_GLYPH_SIZE)
+   render_number(score_right, w/2 + 2*SCORE_GLYPH_SIZE, 2*SCORE_GLYPH_SIZE, SCORE_GLYPH_SIZE)
 
    if paused then
       local paused_text = {"p", "a", "u", "s", "e", "d"}
-      local paused_text_width  = text_width(paused_text)
-      local paused_text_height = 5*GLYPH_SIZE
-      render_text(paused_text, w/2 - paused_text_width/2, h/2 - paused_text_height/2)
+      local paused_text_width  = text_width(paused_text, PAUSED_GLYPH_SIZE)
+      local paused_text_height = 5*PAUSED_GLYPH_SIZE
+      render_text(paused_text, w/2 - paused_text_width/2, h/2 - paused_text_height/2, PAUSED_GLYPH_SIZE)
    end
 end
 
