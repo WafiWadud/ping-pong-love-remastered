@@ -42,3 +42,7 @@ paddle is undefined. You have to figure that out by experimenting.
 | Gamepad 2 <kbd>D-Pad Up</kbd>   | Move right paddle up   |
 | Gamepad 2 <kbd>D-Pad Down</kbd> | Move right paddle down |
 | Gamepad 2 <kbd>Start</kbd>      | Pause/unpause          |
+
+#### Vendored Code
+
+[exe](https://github.com/WafiWadud/exe) - Used for the semi-portable multiarg shebangs
