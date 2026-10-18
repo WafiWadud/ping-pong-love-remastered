@@ -1,3 +1,5 @@
+#!exe bash -c "tl gen main.tl && love ."
+
 --[[
   Ping pong game in Love2D
   Copyright (C) 2026  Alexey Kutepov <reximkut@gmail.com>
