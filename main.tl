@@ -20,19 +20,20 @@
   Changes Made by Escapism/Wafi:
   - Made the consts actually const
   - Made the binary tables into boolean tables (it looks horrible)
+  - Made code actually generate its own lua version and run it under love
 ]]
 
 require("love")
 
-local BALL_SIZE <const>         = 20
-local BALL_SPEED <const>        = 1000*0.4
-local PADDLE_PADING <const>     = 4*BALL_SIZE
-local PADDLE_LENGTH <const>     = BALL_SIZE*6
-local PADDLE_THICCNESS <const>  = BALL_SIZE
-local PADDLE_SPEED <const>      = BALL_SPEED*1.2
-local NET_COUNT <const>         = 51
-local NET_GIRTH <const>         = 3
-local SCORE_GLYPH_SIZE <const>  = BALL_SIZE
+local BALL_SIZE         <const> = 20
+local BALL_SPEED        <const> = 1000*0.4
+local PADDLE_PADING     <const> = 4*BALL_SIZE
+local PADDLE_LENGTH     <const> = BALL_SIZE*6
+local PADDLE_THICCNESS  <const> = BALL_SIZE
+local PADDLE_SPEED      <const> = BALL_SPEED*1.2
+local NET_COUNT         <const> = 51
+local NET_GIRTH         <const> = 3
+local SCORE_GLYPH_SIZE  <const> = BALL_SIZE
 local PAUSED_GLYPH_SIZE <const> = SCORE_GLYPH_SIZE*0.6
 
 local ball_x                      =  0.0
@@ -50,7 +51,7 @@ local sound_score_left:  Source   =  nil
 local sound_score_right: Source   =  nil
 local paused = false
 
-local digits: {{{boolean}}} = {
+local digits <const> : {{{boolean}}} = {
    [0] = {{true ,true ,true }, {true ,false,true }, {true ,false,true }, {true ,false,true }, {true ,true ,true }},
    [1] = {{false,true ,false}, {false,true ,false}, {false,true ,false}, {false,true ,false}, {false,true ,false}},
    [2] = {{true ,true ,true }, {false,false,true }, {true ,true ,true }, {true ,false,false}, {true ,true ,true }},
@@ -72,7 +73,7 @@ local enum FontGlyphs
    "d"
 end
 
-local font: {FontGlyphs:{{boolean}}} = {
+local font <const> : {FontGlyphs:{{boolean}}} = {
    ["p"] = {{true,true ,true }, {true,false,true }, {true,true ,true}, {true,false,false}, {true,false,false}},
    ["a"] = {{true,true ,true }, {true,false,true }, {true,true ,true}, {true,false,true }, {true,false,true }},
    ["u"] = {{true,false,true }, {true,false,true }, {true,false,true}, {true,false,true }, {true,true ,true }},
@@ -96,7 +97,7 @@ local function count_digits(n: integer): integer
    if n == 0 then
       return 1
    end
-   local count = 0
+   local count: integer = 0
    while n > 0 do
       count = count + 1
       n = math.floor(n/10)
@@ -136,14 +137,14 @@ local function render_number(n: integer, x: number, y: number, glyph_size: numbe
 end
 
 local function check_rects_collision(x1: number, y1: number, w1: number, h1: number, x2: number, y2: number, w2: number, h2: number): boolean
-   local l1 = x1
-   local r1 = x1 + w1
-   local t1 = y1
-   local b1 = y1 + h1
-   local l2 = x2
-   local r2 = x2 + w2
-   local t2 = y2
-   local b2 = y2 + h2
+   local l1 <const> = x1
+   local r1 <const> = x1 + w1
+   local t1 <const> = y1
+   local b1 <const> = y1 + h1
+   local l2 <const> = x2
+   local r2 <const> = x2 + w2
+   local t2 <const> = y2
+   local b2 <const> = y2 + h2
    return not (r1 < l2 or r2 < l1 or b1 < t2 or b2 < t1)
    --    t1        t2
    -- l1    r1  l2    r2
